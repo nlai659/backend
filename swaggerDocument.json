@@ -1,0 +1,965 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "SPCA API"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Centre"
+    },
+    {
+      "name": "User"
+    },
+    {
+      "name": "Dog"
+    },
+    {
+      "name": "Scale"
+    }
+  ],
+  "paths": {
+    "/users": {
+      "get": {
+        "tags": ["User"],
+        "summary": "Retrieves a list of all users",
+        "responses": {
+          "200": {
+            "description": "A list of users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["User"],
+        "summary": "Creates a new user",
+        "parameters": [
+          {
+            "name": "centreId",
+            "in": "query",
+            "description": "ID of the centre to which the user belongs",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "name": "userType",
+            "in": "query",
+            "description": "Type of user (e.g. Volunteer, Vet)",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "description": "User object that needs to be added",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewUser"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created successfully",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "format": "uri",
+                  "example": "https://localhost:8080/centres/1/users/1"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body"
+          },
+          "409": {
+            "description": "An existing user already exists with the same username"
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "tags": ["User"],
+        "summary": "Logs in a user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "description": "The user's username",
+                    "example": "Steve123"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "The user's password",
+                    "example": "BiggestSimpInAvengers"
+                  }
+                },
+                "required": ["username", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string",
+                      "description": "An access token for the authenticated user"
+                    },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer",
+                          "description": "The user's ID"
+                        },
+                        "username": {
+                          "type": "string",
+                          "description": "The user's username"
+                        },
+                        "role": {
+                          "type": "string",
+                          "description": "The user's role (e.g. 'Admin', 'Vet', 'Volunteer')"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "The user's creation date"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "The user's last update date"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+
+    "/users/{userId}": {
+      "parameters": [
+        {
+          "name": "userId",
+          "in": "path",
+          "description": "ID of the user to retrieve or delete",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "tags": ["User"],
+        "summary": "Retrieves a single user by ID",
+        "responses": {
+          "200": {
+            "description": "User found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      },
+      "put": {
+        "tags": ["User"],
+        "summary": "Updates user details",
+        "description": "Updates the details of a user with the specified ID",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "description": "ID of the user to update",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User details updated successfully"
+          },
+          "400": {
+            "description": "Invalid request body"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["User"],
+        "summary": "Deletes a user by ID",
+        "responses": {
+          "204": {
+            "description": "User deleted successfully"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      }
+    },
+    "/centres": {
+      "get": {
+        "tags": ["Centre"],
+        "summary": "Retrieves a list of all centres",
+        "responses": {
+          "200": {
+            "description": "A list of centres",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Centre"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Centre"],
+        "summary": "Creates a new centre",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewCentre"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Centre created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Centre"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/centres/{centreId}": {
+      "parameters": [
+        {
+          "name": "centreId",
+          "in": "path",
+          "description": "ID of the centre to retrieve",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "tags": ["Centre"],
+        "summary": "Retrieves a single centre by ID",
+        "responses": {
+          "200": {
+            "description": "Centre found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Centre"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Centre not found"
+          }
+        }
+      }
+    },
+    "/centres/{centreId}/dogs": {
+      "parameters": [
+        {
+          "name": "centreId",
+          "in": "path",
+          "description": "ID of the centre to retrieve dogs from",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "tags": ["Dog"],
+        "summary": "Retrieves a list of all dogs in a specific centre",
+        "responses": {
+          "200": {
+            "description": "A list of dogs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Dog"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Centre not found"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Dog"],
+        "summary": "Adds a new dog to a specific centre",
+        "parameters": [
+          {
+            "name": "centreId",
+            "in": "path",
+            "description": "ID of the centre to add the dog to",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Dog object to be added to the centre",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewDog"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Dog added to the centre",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "format": "uri",
+                  "example": "https://localhost:8080/centres/1/dogs/1"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input, object invalid"
+          },
+          "404": {
+            "description": "Centre not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/centres/{centreId}/dogs/{dogId}": {
+      "parameters": [
+        {
+          "name": "centreId",
+          "in": "path",
+          "description": "ID of the centre the dog belongs to",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "dogId",
+          "in": "path",
+          "description": "ID of the dog to retrieve",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "tags": ["Dog"],
+        "summary": "Retrieves a single dog by ID within a specific centre",
+        "responses": {
+          "200": {
+            "description": "Dog found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dog"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Dog / centre not found"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Dog"],
+        "summary": "Removes a dog from a specific centre",
+        "parameters": [
+          {
+            "name": "centreId",
+            "in": "path",
+            "description": "ID of the centre the dog belongs to",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dogId",
+            "in": "path",
+            "description": "ID of the dog to remove",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Dog removed successfully"
+          },
+          "404": {
+            "description": "Centre or dog not found"
+          }
+        }
+      }
+    },
+    "/centres/{centreId}/dogs/{dogId}/scales/{scaleId}/reserve": {
+      "parameters": [
+        {
+          "name": "centreId",
+          "in": "path",
+          "description": "ID of the centre the dog and scale belongs to",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "dogId",
+          "in": "path",
+          "description": "ID of the dog to be weighed",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "scaleId",
+          "in": "path",
+          "description": "ID of the scale to be reserved for weighing",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "tags": ["Dog"],
+        "summary": "Reserves a scale for weighing a specific dog",
+        "responses": {
+          "200": {
+            "description": "Scale reserved for weighing",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Scale reserved for weighing dog {id} at centre {centreId} on scale {scaleId}"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Dog or scale not found"
+          }
+        }
+      }
+    },
+    "/centres/{centreId}/dogs/{dogId}/weight": {
+      "post": {
+        "summary": "Update the weight of a dog",
+        "tags": ["Dog"],
+        "parameters": [
+          {
+            "name": "centreId",
+            "in": "path",
+            "description": "ID of the centre the dog belongs to",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dogId",
+            "in": "path",
+            "description": "ID of the dog to update",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The weight of the dog on the scale",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewWeight"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Dog weight updated successfully"
+          },
+          "400": {
+            "description": "Invalid input, object invalid"
+          },
+          "404": {
+            "description": "Centre or dog not found"
+          }
+        }
+      }
+    },
+    "/centres/{centreId}/scales": {
+      "parameters": [
+        {
+          "name": "centreId",
+          "in": "path",
+          "description": "ID of the centre to retrieve scales from",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "tags": ["Scale"],
+        "summary": "Retrieves a list of all scales in a specific centre",
+        "responses": {
+          "200": {
+            "description": "A list of scales",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Scale"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Centre not found"
+          }
+        }
+      }
+    },
+    "/centres/{centreId}/scales/{scaleId}": {
+      "parameters": [
+        {
+          "name": "centreId",
+          "in": "path",
+          "description": "ID of the centre the scale belongs to",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "scaleId",
+          "in": "path",
+          "description": "ID of the scale to retrieve",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "tags": ["Scale"],
+        "summary": "Retrieves a single scale by ID within a specific centre",
+        "responses": {
+          "200": {
+            "description": "Scale found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Scale"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Scale / centre not found"
+          }
+        }
+      }
+    },
+    "/centres/{centreId}/scales/{scaleId}/weight": {
+      "get": {
+        "tags": ["Scale"],
+        "summary": "Adds a new weight measured for a dog on a specific scale",
+        "parameters": [
+          {
+            "name": "centreId",
+            "in": "path",
+            "description": "ID of the centre the scale belongs to",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "scaleId",
+            "in": "path",
+            "description": "ID of the scale to retrieve",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "weight",
+            "in": "query",
+            "description": "ID of the scale to retrieve",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Weight measurement added successfully"
+          },
+          "400": {
+            "description": "Invalid input data provided"
+          },
+          "404": {
+            "description": "Centre or scale not found"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Centre": {
+        "type": "object",
+        "required": ["id", "name", "location"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the centre"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the centre"
+          },
+          "location": {
+            "type": "string",
+            "description": "Location of the centre"
+          },
+          "dogs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "ID of a dog at the centre"
+            }
+          },
+          "scales": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "ID of a scale at the centre"
+            }
+          }
+        }
+      },
+      "NewCentre": {
+        "type": "object",
+        "required": ["name", "location"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the centre"
+          },
+          "location": {
+            "type": "string",
+            "description": "Location of the centre"
+          }
+        }
+      },
+      "User": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/UserDTO"
+          }
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the user"
+          }
+        }
+      },
+      "NewUser": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/UserDTO"
+          }
+        ],
+        "properties": {
+          "password": {
+            "type": "string",
+            "description": "The password of the user."
+          }
+        }
+      },
+      "UserDTO": {
+        "type": "object",
+        "required": [
+          "username",
+          "firstName",
+          "lastName",
+          "phoneNumber",
+          "email",
+          "age",
+          "userType",
+          "centreId"
+        ],
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "The username of the user."
+          },
+          "firstName": {
+            "type": "string",
+            "description": "The first name of the user."
+          },
+          "lastName": {
+            "type": "string",
+            "description": "The last name of the user."
+          },
+          "email": {
+            "type": "string",
+            "description": "The email of the user."
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "The phone number of the user."
+          },
+          "age": {
+            "type": "integer",
+            "description": "The age of the user."
+          },
+          "userType": {
+            "type": "string",
+            "enum": ["Vet", "Admin", "Volunteer"],
+            "description": "The user type of the user."
+          },
+          "centreId": {
+            "type": "string",
+            "description": "The ID of the centre associated with the user."
+          }
+        }
+      },
+      "Dog": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/DogDTO"
+          }
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the dog"
+          },
+          "weight": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Weight"
+            }
+          },
+          "centreId": {
+            "type": "string",
+            "description": "ID of the centre the dog is associated with"
+          }
+        }
+      },
+      "NewDog": {
+        "type": "object",
+        "required": ["name", "description"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the dog"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the dog"
+          },
+          "image": {
+            "type": "string",
+            "description": "URL of the dog's image"
+          }
+        }
+      },
+      "DogDTO": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/NewDog"
+          }
+        ],
+        "properties": {
+          "idBeingWeighted": {
+            "type": "boolean",
+            "description": "Whether the dog is currently being weighed"
+          }
+        }
+      },
+      "NewWeight": {
+        "type": "object",
+        "properties": {
+          "weight": {
+            "type": "number",
+            "description": "The weight of the dog on the scale",
+            "format": "float",
+            "minimum": 0.1
+          }
+        },
+        "required": ["weight"]
+      },
+      "Weight": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/NewWeight"
+          }
+        ],
+        "properties": {
+          "dateWeighed": {
+            "type": "string",
+            "description": "The date and time that the dog was weighed",
+            "format": "date-time"
+          }
+        }
+      },
+      "Scale": {
+        "type": "object",
+        "required": ["id", "scaleRef", "centreId", "isReserved"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the scale"
+          },
+          "scaleRef": {
+            "type": "string",
+            "description": "The refference of the scale"
+          },
+          "centreId": {
+            "type": "string",
+            "description": "ID of the centre the scale belongs to"
+          },
+          "isReserved": {
+            "type": "boolean",
+            "description": "Whether the scale is reserved or not"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ]
+}
