@@ -79,3 +79,5 @@ mongoose
   .catch((error) =>
     console.log("There is an error with the Mongoose connection: " + error)
   );
+
+module.exports = app;
